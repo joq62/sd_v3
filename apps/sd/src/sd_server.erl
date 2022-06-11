@@ -96,7 +96,12 @@ ping()->
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
 init([]) ->
-    rpc:call(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,{"Server started  ",?MODULE}]),
+    case code:is_loaded(nodelog_server) of
+	true->
+	    rpc:cast(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,{"Server started  ",?MODULE}]);
+	_->
+	    be_silent
+    end,
     {ok, #state{}
     }.
 
