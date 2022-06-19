@@ -100,7 +100,8 @@ init([]) ->
 	false->
 	    be_silent;
 	_->
-	    rpc:cast(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,{"Server started  ",?MODULE}])
+	    rpc:cast(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,
+						{"OK, started server at node  ",?MODULE," ",node()}])
     end,
     {ok, #state{}
     }.
