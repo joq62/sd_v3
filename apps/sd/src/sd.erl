@@ -7,7 +7,7 @@
 %%% 
 %%% Created : 10 dec 2012
 %%% -------------------------------------------------------------------
--module(sd_server). 
+-module(sd). 
 
 -behaviour(gen_server). 
 
@@ -50,7 +50,7 @@
 %% External functions
 %% ====================================================================
 appl_start([])->
-    application:start(sd).
+    application:start(?MODULE).
 
 %% ====================================================================
 %% Server functions
@@ -96,11 +96,11 @@ ping()->
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
 init([]) ->
-    case code:is_loaded(nodelog_server) of
+    case code:is_loaded(nodelog) of
 	false->
 	    be_silent;
 	_->
-	    rpc:cast(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,
+	    rpc:cast(node(),nodelog,log,[notice,?MODULE_STRING,?LINE,
 						{"OK, started server at node  ",?MODULE," ",node()}])
     end,
     {ok, #state{}

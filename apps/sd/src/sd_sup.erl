@@ -30,7 +30,7 @@ init([]) ->
                  intensity => 0,
                  period => 1},
     ChildSpecs = [#{id=>sd,
-		    start=>{sd_server,start,[]}}],
+		    start=>{sd,start,[]}}],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions
