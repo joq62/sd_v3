@@ -23,18 +23,19 @@
 %% Returns: List({HostId,Ip,SshPort,Uid,Pwd}
 %% --------------------------------------------------------------------
 start()->
-    ok=sd_server:appl_start([]),
-    pong=sd_server:ping(),
-    timer:sleep(5000),
- %   io:format("AllApplications ~p~n",[application:which_applications()]),
+    {ok,HostName}=net:gethostname(),
+    [N0,N1,N2]=setup(),
+    ok=sd:appl_start([]),
+    pong=sd:ping(),
+   
+
+    ok=load_test([N0,N1,N2],HostName),
+    ok=start_1_test([N0,N1,N2],HostName),
+    ok=start_2_test([N0,N1,N2],HostName),
     
-  %  ok=t1_test(),
-   % ok=t2_test(),
-    
-   % ok=t22_test(),
-%   ok=test3(),
- %   ok=test4(),
-%    init:stop(),
+   
+ 
+    init:stop(),
     ok.
 
 
@@ -43,14 +44,121 @@ start()->
 %% Description: Initiate the eunit tests, set upp needed processes etc
 %% Returns: non
 %% -------------------------------------------------------------------
+start_2_test([N0,N1,N2],HostName)->
+    rpc:call(N0,application,start,[test_add],5000),
+    rpc:call(N1,application,start,[test_divi],5000),
+    rpc:call(N2,application,start,[test_add],5000),
+    rpc:call(N2,application,start,[test_divi],5000),
+
+    [{'n0@c100',"c100"},{'n2@c100',"c100"}]=sd:get(test_add),
+    [{'n1@c100',"c100"},{'n2@c100',"c100"}]=sd:get(test_divi),  
+    []=sd:get(glurk), 
+    [{'n0@c100',"c100"},{'n2@c100',"c100"}]=sd:get_host(test_add,HostName),
+    [{'n1@c100',"c100"},{'n2@c100',"c100"}]=sd:get_host(test_divi,HostName),
+    []=sd:get_host(test_divi,"glurk_hostname"),
+    []=sd:get_host(glurk,HostName),
+    []=sd:get_host(glurk,"glurk_hostname"),
+    M=test_add,
+    F=add,
+    A=[20,22],
+    T=5000,
+    42=sd:call(test_add,M,F,A,T),
+    []=sd:call(glurk,M,F,A,T),
+    {badrpc,_}=sd:call(test_add,glurk,F,A,T),
+    {badrpc,_}=sd:call(test_add,M,glurk,A,T),
+    {badrpc,_}=sd:call(test_add,M,F,[a,34],T),
+    
+    true=sd:cast(test_add,M,F,A),
+    
+    ok.
+%% --------------------------------------------------------------------
+%% Function:start/0 
+%% Description: Initiate the eunit tests, set upp needed processes etc
+%% Returns: non
+%% -------------------------------------------------------------------
+start_1_test([N0,N1,N2],HostName)->
+    rpc:call(N0,application,start,[test_add],5000),
+    rpc:call(N1,application,start,[test_divi],5000),
+    rpc:call(N2,application,load,[test_add],5000),
+    rpc:call(N2,application,load,[test_divi],5000),
+
+    [{'n0@c100',"c100"}]=sd:get(test_add),
+    [{'n1@c100',"c100"}]=sd:get(test_divi),  
+    []=sd:get(glurk), 
+    [{'n0@c100',"c100"}]=sd:get_host(test_add,HostName),
+    [{'n1@c100',"c100"}]=sd:get_host(test_divi,HostName),
+    []=sd:get_host(test_divi,"glurk_hostname"),
+    []=sd:get_host(glurk,HostName),
+    []=sd:get_host(glurk,"glurk_hostname"),
+    M=test_add,
+    F=add,
+    A=[20,22],
+    T=5000,
+    42=sd:call(test_add,M,F,A,T),
+    []=sd:call(glurk,M,F,A,T),
+    {badrpc,_}=sd:call(test_add,glurk,F,A,T),
+    {badrpc,_}=sd:call(test_add,M,glurk,A,T),
+    {badrpc,_}=sd:call(test_add,M,F,[a,34],T),
+    
+    true=sd:cast(test_add,M,F,A),
+    
+    ok.
+%% --------------------------------------------------------------------
+%% Function:start/0 
+%% Description: Initiate the eunit tests, set upp needed processes etc
+%% Returns: non
+%% -------------------------------------------------------------------
+load_test([N0,N1,N2],HostName)->
+    rpc:call(N0,application,load,[test_add],5000),
+    rpc:call(N1,application,load,[test_divi],5000),
+    rpc:call(N2,application,load,[test_add],5000),
+    rpc:call(N2,application,load,[test_divi],5000),
+
+    []=sd:get(test_add),
+    []=sd:get(test_divi),  
+    []=sd:get(glurk), 
+    []=sd:get_host(test_add,HostName),
+    []=sd:get_host(test_divi,HostName),
+    []=sd:get_host(test_divi,"glurk_hostname"),
+    []=sd:get_host(glurk,HostName),
+    []=sd:get_host(glurk,"glurk_hostname"),
+    M=test_add,
+    F=add,
+    A=[20,22],
+    T=5000,
+    []=sd:call(test_add,M,F,A,T),
+    []=sd:call(glurk,M,F,A,T),
+    []=sd:call(test_add,glurk,F,A,T),
+    []=sd:call(test_add,M,glurk,A,T),
+    []=sd:call(test_add,M,F,[a,34],T),
+    
+    {error,[eexists,test_add,cast,sd,205]}=sd:cast(test_add,M,F,A),
+    
+    ok.
+
+
+%call(App,M,F,A,T)
+%cast(App,M,F,A)
+%all(),
+%get(WantedApp)
+%get_host(WantedApp,WantedHost)
+
+%get(WantedApp,WantedNode)
+%% --------------------------------------------------------------------
+%% Function:start/0 
+%% Description: Initiate the eunit tests, set upp needed processes etc
+%% Returns: non
+%% -------------------------------------------------------------------
+call_cast_test()->
+    
+    ok.
+
+
 
 setup()->
-  
-    % Simulate host
-    R=rpc:call(node(),test_nodes,start_nodes,[],2000),
-%    [Vm1|_]=test_nodes:get_nodes(),
-
-%    Ebin="ebin",
- %   true=rpc:call(Vm1,code,add_path,[Ebin],5000),
- 
-    R.
+    ok=rpc:call(node(),test_nodes,start_nodes,[],5000),
+    [N0,N1,N2]=test_nodes:get_nodes(),
+    rpc:call(N0,code,add_patha,["test_ebin"],5000),
+    rpc:call(N1,code,add_patha,["test_ebin"],5000),
+    rpc:call(N2,code,add_patha,["test_ebin"],5000),
+    [N0,N1,N2].

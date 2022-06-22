@@ -20,4 +20,7 @@ eunit:
 	mkdir ebin;
 	cp _build/default/lib/*/ebin/* ebin;
 	erlc -o test_ebin test/*.erl;
-	erl -pa ebin -pa test_ebin -sname sd -run basic_eunit start -setcookie cookie_test
+	cp /home/joq62/erlang/applications/ordinary/test_add/ebin/* test_ebin;
+	cp /home/joq62/erlang/applications/ordinary/test_divi/ebin/* test_ebin;
+	erl -pa ebin -pa test_ebin\
+	    -sname sd -run basic_eunit start -setcookie cookie_test

@@ -187,7 +187,7 @@ call(App,M,F,A,T)->
 		   {error,[{badrpc,Reason}]};
 	       []->
 		   [];
-	       [Node|_]->
+	       [{Node,_}|_]->
 		   rpc:call(Node,M,F,A,T)
 	   end,
     Result.
@@ -203,7 +203,7 @@ cast(App,M,F,A)->
 		   {badrpc,Reason};
 	       []->
 		   {error,[eexists,App,?FUNCTION_NAME,?MODULE,?LINE]};
-	       [Node|_]->
+	       [{Node,_}|_]->
 		   rpc:cast(Node,M,F,A)
 	   end,
     Result.			   
@@ -214,37 +214,39 @@ cast(App,M,F,A)->
 %% Returns: non
 %% --------------------------------------------------------------------
 all()->
-    Apps=[{Node,rpc:call(Node,application,loaded_applications,[],5*1000)}||Node<-[node()|nodes()]],
+    Apps=[{Node,rpc:call(Node,net,gethostname,[],5*1000),rpc:call(Node,application,which_applications,[],5*1000)}||Node<-[node()|nodes()]],
     AvailableNodes=[{Node,AppList}||{Node,AppList}<-Apps,
 				    AppList/={badrpc,nodedown}],
     AvailableNodes.
     
-
 get(WantedApp)->
-    Apps=[{Node,rpc:call(Node,application,loaded_applications,[],5*1000)}||Node<-[node()|nodes()]],
-    AvailableNodes=[Node||{Node,AppList}<-Apps,
-			  AppList/={badrpc,nodedown},
-			  AppList/={badrpc,timeout},
-			  true==lists:keymember(WantedApp,1,AppList)],
+    Apps=[{Node,rpc:call(Node,net,gethostname,[],5*1000),
+	   rpc:call(Node,application,which_applications,[],5*1000)}||Node<-[node()|nodes()]],
+    AvailableNodes=[{Node,HostName}||{Node,{ok,HostName},AppList}<-Apps,
+				     AppList/={badrpc,nodedown},
+				     AppList/={badrpc,timeout},
+				     true==lists:keymember(WantedApp,1,AppList)],
     AvailableNodes.
 
 get(WantedApp,WantedNode)->
 
-    Apps=[{Node,rpc:call(Node,application,loaded_applications,[],5*1000)}||Node<-[node()|nodes()]],
-    AvailableNodes=[WantedNode||{Node,AppList}<-Apps,
-				AppList/={badrpc,nodedown},
-				AppList/={badrpc,timeout},
-				true==lists:keymember(WantedApp,1,AppList),
-				Node==WantedNode],
+    Apps=[{Node,rpc:call(Node,net,gethostname,[],5*1000),
+	   rpc:call(Node,application,which_applications,[],5*1000)}||Node<-[node()|nodes()]],
+    AvailableNodes=[{Node,HostName}||{Node,{ok,HostName},AppList}<-Apps,
+				     AppList/={badrpc,nodedown},
+				     AppList/={badrpc,timeout},
+				     true==lists:keymember(WantedApp,1,AppList),
+				     Node==WantedNode],
     AvailableNodes.
 
 get_host(WantedApp,WantedHost)->
-    Apps=[{Node,rpc:call(Node,application,loaded_applications,[],5*1000)}||Node<-[node()|nodes()]],
-    AvailableNodes=[Node||{Node,AppList}<-Apps,
-				AppList/={badrpc,nodedown},
-				AppList/={badrpc,timeout},
-				true=:=lists:keymember(WantedApp,1,AppList),
-				inet:gethostname()=:={ok,WantedHost}],
+    Apps=[{Node,rpc:call(Node,net,gethostname,[],5*1000),
+	   rpc:call(Node,application,which_applications,[],5*1000)}||Node<-[node()|nodes()]],
+    AvailableNodes=[{Node,HostName}||{Node,{ok,HostName},AppList}<-Apps,
+				     AppList/={badrpc,nodedown},
+				     AppList/={badrpc,timeout},
+				     true=:=lists:keymember(WantedApp,1,AppList),
+				     HostName=:=WantedHost],
     AvailableNodes.
 	  
 %% --------------------------------------------------------------------
