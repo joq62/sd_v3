@@ -69,6 +69,8 @@ start_2_test([N0,N1,N2],HostName)->
     {badrpc,_}=sd:call(test_add,M,F,[a,34],T),
     
     true=sd:cast(test_add,M,F,A),
+
+    io:format(" sd:all ~p~n",[sd:all()]),
     
     ok.
 %% --------------------------------------------------------------------
@@ -101,7 +103,8 @@ start_1_test([N0,N1,N2],HostName)->
     {badrpc,_}=sd:call(test_add,M,F,[a,34],T),
     
     true=sd:cast(test_add,M,F,A),
-    
+    io:format(" sd:all ~p~n",[sd:all()]),
+  
     ok.
 %% --------------------------------------------------------------------
 %% Function:start/0 
@@ -133,7 +136,8 @@ load_test([N0,N1,N2],HostName)->
     []=sd:call(test_add,M,F,[a,34],T),
     
     {error,[eexists,test_add,cast,sd,205]}=sd:cast(test_add,M,F,A),
-    
+
+    io:format(" sd:all ~p~n",[sd:all()]),    
     ok.
 
 

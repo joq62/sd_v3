@@ -215,7 +215,7 @@ cast(App,M,F,A)->
 %% --------------------------------------------------------------------
 all()->
     Apps=[{Node,rpc:call(Node,net,gethostname,[],5*1000),rpc:call(Node,application,which_applications,[],5*1000)}||Node<-[node()|nodes()]],
-    AvailableNodes=[{Node,AppList}||{Node,AppList}<-Apps,
+    AvailableNodes=[{Node,HostName,AppList}||{Node,{ok,HostName},AppList}<-Apps,
 				    AppList/={badrpc,nodedown}],
     AvailableNodes.
     
